@@ -1,6 +1,26 @@
 {
   "rules": {
     ".read": true,
-    ".write": true
+    ".write": true,
+    "products": {
+    ".indexOn": ["categoryId", "createdAt", "updatedAt"]
+    },
+    "categories": {
+      ".indexOn": ["createdAt"]
+    },
+    "tags": {
+      ".indexOn": ["createdAt"]
+    },
+    "relations": {
+      ".indexOn": ["categoryId"]
+    },
+    "indexes": {
+      ".read": true,
+      ".write": true
+    },
+    "filters": {
+      ".read": true,
+      ".write": true
+    }
   }
 }

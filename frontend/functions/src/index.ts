@@ -11,6 +11,13 @@ interface Relation {
   tagIds: string[]
 }
 
+interface Product {
+  name: string
+  price: number
+  createdAt: number
+  updatedAt: number
+}
+
 export const onRelationsChange = onValueWritten(
   '/relations/{productId}',
   async (event) => {
@@ -63,4 +70,32 @@ async function removeFromIndex(path: string, key: string, productId: string) {
   } else {
     await ref.set(updated)
   }
+}
+
+export const onProductChange = onValueWritten(
+  '/products/{productId}',
+  async (event) => {
+    const productId = event.params.productId
+    const product = event.data.after.val() as Product | null
+
+    if (!product) {
+      await db.ref(`filters/byPrice/${productId}`).remove()
+      return
+    }
+
+    const priceCategory = getPriceCategory(product.price)
+    await db.ref(`filters/byPrice/${productId}`).set({
+      name: product.name,
+      price: product.price,
+      priceCategory,
+      updatedAt: product.updatedAt
+    })
+  }
+)
+
+function getPriceCategory(price: number): string {
+  if (price < 1000) return 'cheap'
+  if (price < 5000) return 'medium'
+  if (price < 20000) return 'expensive'
+  return 'premium'
 }
