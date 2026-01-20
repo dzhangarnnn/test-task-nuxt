@@ -6,4 +6,14 @@ export default defineNuxtConfig({
     '../modules'
   ],
   ssr: false,
+  imports: {
+    dirs: ['composables']
+  },
+  runtimeConfig: {
+    public: {
+      firebaseApiKey: process.env.FIREBASE_API_KEY || 'test-key',
+      firebaseProjectId: process.env.FIREBASE_PROJECT_ID || 'test-project',
+      useEmulator: process.env.USE_EMULATOR || 'true'
+    }
+  },
 })
