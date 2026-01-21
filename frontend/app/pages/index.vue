@@ -1,27 +1,66 @@
 <template>
   <div class="home-page">
-    <h1>Добро пожаловать</h1>
-    <p>Приложение для управления продуктами, категориями и тегами.</p>
+    <div class="welcome-section">
+      <h1 class="page-title">Добро пожаловать</h1>
+      <p class="page-subtitle">Приложение для управления продуктами, категориями и тегами</p>
+    </div>
     
-    <div class="stats">
+    <div class="stats-grid">
       <div class="stat-card">
-        <span class="stat-value">{{ stats.products }}</span>
-        <span class="stat-label">Продуктов</span>
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.products }}</span>
+          <span class="stat-label">Продуктов</span>
+        </div>
       </div>
       <div class="stat-card">
-        <span class="stat-value">{{ stats.categories }}</span>
-        <span class="stat-label">Категорий</span>
+        <div class="stat-icon">📁</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.categories }}</span>
+          <span class="stat-label">Категорий</span>
+        </div>
       </div>
       <div class="stat-card">
-        <span class="stat-value">{{ stats.tags }}</span>
-        <span class="stat-label">Тегов</span>
+        <div class="stat-icon">🏷️</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.tags }}</span>
+          <span class="stat-label">Тегов</span>
+        </div>
       </div>
     </div>
 
-    <div class="quick-actions">
-      <h3>Быстрые действия</h3>
-      <NuxtLink to="/products" class="action-btn">Управление продуктами</NuxtLink>
-      <NuxtLink to="/relations" class="action-btn">Настроить связи</NuxtLink>
+    <div class="quick-actions-card">
+      <h2>Быстрые действия</h2>
+      <div class="actions-grid">
+        <NuxtLink to="/products" class="action-card">
+          <span class="action-icon">📦</span>
+          <div class="action-text">
+            <span class="action-title">Управление продуктами</span>
+            <span class="action-desc">Создание, редактирование и удаление</span>
+          </div>
+        </NuxtLink>
+        <NuxtLink to="/categories" class="action-card">
+          <span class="action-icon">📁</span>
+          <div class="action-text">
+            <span class="action-title">Управление категориями</span>
+            <span class="action-desc">Организация по категориям</span>
+          </div>
+        </NuxtLink>
+        <NuxtLink to="/relations" class="action-card">
+          <span class="action-icon">🔗</span>
+          <div class="action-text">
+            <span class="action-title">Настройка связей</span>
+            <span class="action-desc">Привязка к категориям и тегам</span>
+          </div>
+        </NuxtLink>
+        <NuxtLink to="/filters" class="action-card">
+          <span class="action-icon">⚡</span>
+          <div class="action-text">
+            <span class="action-title">Фильтрация</span>
+            <span class="action-desc">Поиск по индексам</span>
+          </div>
+        </NuxtLink>
+      </div>
     </div>
   </div>
 </template>
@@ -40,52 +79,121 @@ onMounted(() => {
 
 <style scoped>
 .home-page {
-  max-width: 800px;
+  max-width: 1000px;
 }
 
-.stats {
+.welcome-section {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin: 2rem 0;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
 }
 
 .stat-card {
   background: white;
   padding: 1.5rem;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+  font-size: 2.25rem;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f2f5;
+  border-radius: 12px;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .stat-value {
-  display: block;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #3a3a6e;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1;
 }
 
 .stat-label {
   color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
 }
 
-.quick-actions {
+.quick-actions-card {
   background: white;
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.action-btn {
-  display: inline-block;
-  margin-right: 1rem;
-  padding: 0.75rem 1.5rem;
-  background: #3a3a6e;
-  color: white;
+.quick-actions-card h2 {
+  font-size: 1.15rem;
+  color: #1a1a2e;
+  margin: 0 0 1.25rem 0;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: #f8f9fa;
+  border-radius: 10px;
   text-decoration: none;
-  border-radius: 6px;
+  transition: all 0.2s;
+  border: 2px solid transparent;
 }
 
-.action-btn:hover {
-  background: #4a4a8e;
+.action-card:hover {
+  background: #f0f2f5;
+  border-color: #3a3a6e;
+}
+
+.action-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.action-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.action-title {
+  font-weight: 600;
+  color: #1a1a2e;
+  font-size: 0.95rem;
+}
+
+.action-desc {
+  font-size: 0.8rem;
+  color: #666;
 }
 </style>

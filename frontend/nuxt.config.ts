@@ -16,4 +16,7 @@ export default defineNuxtConfig({
       useEmulator: process.env.USE_EMULATOR || 'true'
     }
   },
+  css: [
+    '~/assets/css/main.css'
+  ],
 })

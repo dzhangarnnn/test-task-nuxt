@@ -1,43 +1,39 @@
 <template>
   <div class="relations-page">
-    <h1>Связи продуктов</h1>
-    <p class="subtitle">Привяжите продукты к категориям и тегам</p>
+    <div class="page-header">
+      <div class="header-text">
+        <h1 class="page-title">Связи продуктов</h1>
+        <p class="page-subtitle">Привяжите продукты к категориям и тегам</p>
+      </div>
+    </div>
 
-    <div class="relations-container" v-if="products.length">
-      <div 
-        v-for="product in products" 
-        :key="product.id" 
-        class="product-card"
-      >
+    <div class="relations-grid" v-if="products.length">
+      <div v-for="product in products" :key="product.id" class="product-card">
         <div class="product-header">
           <h3>{{ product.name }}</h3>
           <span class="price">{{ formatPrice(product.price) }}</span>
         </div>
 
-        <div class="relation-section">
+        <div class="relation-group">
           <label>Категория:</label>
           <select 
             :value="getProductCategory(product.id!)"
             @change="updateCategory(product.id!, ($event.target as HTMLSelectElement).value)"
           >
             <option value="">— Не выбрана —</option>
-            <option 
-              v-for="cat in categories" 
-              :key="cat.id" 
-              :value="cat.id"
-            >
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
               {{ cat.name }}
             </option>
           </select>
         </div>
 
-        <div class="relation-section">
+        <div class="relation-group">
           <label>Теги:</label>
-          <div class="tags-selector">
+          <div class="tags-select">
             <label 
               v-for="tag in tags" 
               :key="tag.id" 
-              class="tag-checkbox"
+              class="tag-option"
               :style="{ '--tag-color': tag.color }"
             >
               <input 
@@ -53,7 +49,9 @@
     </div>
 
     <div class="empty-state" v-else>
-      <p>Сначала добавьте продукты для настройки связей</p>
+      <div class="empty-icon">🔗</div>
+      <p class="empty-title">Продукты не найдены</p>
+      <p class="empty-hint">Сначала добавьте продукты для настройки связей</p>
       <NuxtLink to="/products" class="btn btn-primary">Перейти к продуктам</NuxtLink>
     </div>
   </div>
@@ -67,39 +65,22 @@ const { subscribeList, setData, getData } = useDatabase()
 const products = ref<Product[]>([])
 const categories = ref<Category[]>([])
 const tags = ref<Tag[]>([])
-
-// Связи: productId -> { categoryId, tagIds }
 const relations = ref<Record<string, { categoryId: string | null, tagIds: string[] }>>({})
 
 onMounted(() => {
-  subscribeList<Product>('products', (data) => {
-    products.value = data
-  })
-  
-  subscribeList<Category>('categories', (data) => {
-    categories.value = data
-  })
-  
-  subscribeList<Tag>('tags', (data) => {
-    tags.value = data
-  })
-
-  // Загружаем связи
+  subscribeList<Product>('products', (data) => { products.value = data })
+  subscribeList<Category>('categories', (data) => { categories.value = data })
+  subscribeList<Tag>('tags', (data) => { tags.value = data })
   loadRelations()
 })
 
 const loadRelations = async () => {
   const data = await getData<Record<string, { categoryId: string | null, tagIds: string[] }>>('relations')
-  if (data) {
-    relations.value = data
-  }
+  if (data) relations.value = data
 }
 
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB'
-  }).format(price)
+  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(price)
 }
 
 const getProductCategory = (productId: string): string => {
@@ -112,18 +93,9 @@ const isTagSelected = (productId: string, tagId: string): boolean => {
 
 const updateCategory = async (productId: string, categoryId: string) => {
   const current = relations.value[productId] || { categoryId: null, tagIds: [] }
-  const updated = {
-    ...current,
-    categoryId: categoryId || null
-  }
-  
-  // Локальное обновление
+  const updated = { ...current, categoryId: categoryId || null }
   relations.value[productId] = updated
-  
-  // Сохраняем в Firebase
   await setData(`relations/${productId}`, updated)
-  
-  // Обновляем reverse index (вызывается Cloud Function, но на эмуляторе делаем вручную)
   await updateReverseIndex()
 }
 
@@ -151,18 +123,13 @@ const updateReverseIndex = async () => {
   for (const [productId, rel] of Object.entries(relations.value)) {
     if (!rel) continue
     if (rel.categoryId) {
-      if (!categoryProducts[rel.categoryId]) {
-        categoryProducts[rel.categoryId] = []
-      }
+      categoryProducts[rel.categoryId] = categoryProducts[rel.categoryId] || []
       categoryProducts[rel.categoryId]!.push(productId)
     }
-    
-    for (const tagId of rel.tagIds || []) {
-      if (!tagProducts[tagId]) {
-        tagProducts[tagId] = []
-      }
+    (rel.tagIds || []).forEach(tagId => {
+      tagProducts[tagId] = tagProducts[tagId] || []
       tagProducts[tagId].push(productId)
-    }
+    })
   }
   
   await setData('indexes/categoryProducts', categoryProducts)
@@ -175,41 +142,35 @@ const updateReverseIndex = async () => {
   max-width: 1000px;
 }
 
-.relations-page h1 {
-  margin: 0;
-  color: #333;
+.page-header {
+  margin-bottom: 1.5rem;
 }
 
-.subtitle {
-  color: #666;
-  margin: 0.5rem 0 2rem 0;
-}
-
-.relations-container {
+.relations-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
 }
 
 .product-card {
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .product-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #eee;
 }
 
 .product-header h3 {
-  margin: 0;
-  color: #333;
+  font-size: 1.1rem;
+  color: #1a1a2e;
 }
 
 .price {
@@ -217,34 +178,40 @@ const updateReverseIndex = async () => {
   font-weight: 600;
 }
 
-.relation-section {
+.relation-group {
   margin-bottom: 1rem;
 }
 
-.relation-section > label {
+.relation-group > label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #555;
+  color: #495057;
   font-weight: 500;
   font-size: 0.9rem;
 }
 
-.relation-section select {
+.relation-group select {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
   background: white;
+  cursor: pointer;
 }
 
-.tags-selector {
+.relation-group select:focus {
+  outline: none;
+  border-color: #3a3a6e;
+}
+
+.tags-select {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.tag-checkbox {
+.tag-option {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -256,16 +223,16 @@ const updateReverseIndex = async () => {
   border: 2px solid transparent;
 }
 
-.tag-checkbox:hover {
+.tag-option:hover {
   background: #eee;
 }
 
-.tag-checkbox:has(input:checked) {
+.tag-option:has(input:checked) {
   background: color-mix(in srgb, var(--tag-color) 15%, white);
   border-color: var(--tag-color);
 }
 
-.tag-checkbox input {
+.tag-option input {
   display: none;
 }
 
@@ -276,25 +243,48 @@ const updateReverseIndex = async () => {
 
 .empty-state {
   background: white;
-  padding: 3rem;
+  padding: 4rem 2rem;
   text-align: center;
   border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.empty-state p {
-  color: #666;
+.empty-icon {
+  font-size: 3rem;
   margin-bottom: 1rem;
 }
 
+.empty-title {
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.empty-hint {
+  color: #999;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
 .btn {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
   text-decoration: none;
-  border-radius: 6px;
+  transition: all 0.2s;
 }
 
 .btn-primary {
   background: #3a3a6e;
   color: white;
+}
+
+.btn-primary:hover {
+  background: #4a4a8e;
 }
 </style>
