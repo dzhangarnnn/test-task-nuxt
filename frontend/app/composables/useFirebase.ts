@@ -17,10 +17,10 @@ export const useFirebase = () => {
       }
       app = initializeApp(firebaseConfig)
     } else {
-      app = getApps()[0]
+      app = getApps()[0] ?? null
     }
 
-    if (!db) {
+    if (!db && app) {
       db = getDatabase(app)
       
       if (config.public.useEmulator === 'true' && !emulatorConnected) {
