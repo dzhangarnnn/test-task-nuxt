@@ -60,24 +60,34 @@
 <script setup lang="ts">
 import type { Product, Category, Tag } from '~/types'
 
-const { subscribeList, setData, getData } = useDatabase()
+type RelationMap = Record<string, { categoryId: string | null; tagIds: string[] }>
 
-const products = ref<Product[]>([])
-const categories = ref<Category[]>([])
-const tags = ref<Tag[]>([])
-const relations = ref<Record<string, { categoryId: string | null, tagIds: string[] }>>({})
+const { getList, getData } = useDatabaseRest()
+
+const [
+  { data: initialProducts },
+  { data: initialCategories },
+  { data: initialTags },
+  { data: initialRelations }
+] = await Promise.all([
+  useAsyncData<Product[]>('rel-products', () => getList<Product>('products'), { default: () => [] }),
+  useAsyncData<Category[]>('rel-categories', () => getList<Category>('categories'), { default: () => [] }),
+  useAsyncData<Tag[]>('rel-tags', () => getList<Tag>('tags'), { default: () => [] }),
+  useAsyncData<RelationMap | null>('rel-relations', () => getData<RelationMap>('relations'), { default: () => null }),
+])
+
+const products = ref<Product[]>(initialProducts.value ?? [])
+const categories = ref<Category[]>(initialCategories.value ?? [])
+const tags = ref<Tag[]>(initialTags.value ?? [])
+const relations = ref<RelationMap>(initialRelations.value ?? {})
+
+const { subscribeList, setData } = useDatabase()
 
 onMounted(() => {
   subscribeList<Product>('products', (data) => { products.value = data })
   subscribeList<Category>('categories', (data) => { categories.value = data })
   subscribeList<Tag>('tags', (data) => { tags.value = data })
-  loadRelations()
 })
-
-const loadRelations = async () => {
-  const data = await getData<Record<string, { categoryId: string | null, tagIds: string[] }>>('relations')
-  if (data) relations.value = data
-}
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(price)

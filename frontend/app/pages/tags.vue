@@ -83,9 +83,16 @@
 <script setup lang="ts">
 import type { Tag } from '~/types'
 
+const { getList } = useDatabaseRest()
+const { data: initialTags } = await useAsyncData<Tag[]>(
+  'tags',
+  () => getList<Tag>('tags'),
+  { default: () => [] }
+)
+
 const { subscribeList, pushData, setData, removeData } = useDatabase()
 
-const tags = ref<Tag[]>([])
+const tags = ref<Tag[]>(initialTags.value ?? [])
 const showModal = ref(false)
 const editingId = ref<string | null>(null)
 

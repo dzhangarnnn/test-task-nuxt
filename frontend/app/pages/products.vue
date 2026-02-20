@@ -75,9 +75,16 @@
 <script setup lang="ts">
 import type { Product } from '~/types'
 
+const { getList } = useDatabaseRest()
+const { data: initialProducts } = await useAsyncData<Product[]>(
+  'products',
+  () => getList<Product>('products'),
+  { default: () => [] }
+)
+
 const { subscribeList, pushData, setData, removeData } = useDatabase()
 
-const products = ref<Product[]>([])
+const products = ref<Product[]>(initialProducts.value ?? [])
 const showModal = ref(false)
 const editingId = ref<string | null>(null)
 

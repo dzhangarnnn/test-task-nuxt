@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   extends: [
     '../modules'
   ],
-  ssr: false,
+  ssr: true,
   imports: {
     dirs: ['composables']
   },

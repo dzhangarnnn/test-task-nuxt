@@ -9,6 +9,8 @@ export const useFirebase = () => {
   const config = useRuntimeConfig()
 
   const initFirebase = () => {
+    if (import.meta.server) return { app: null, db: null }
+
     if (getApps().length === 0) {
       const firebaseConfig = {
         apiKey: config.public.firebaseApiKey,

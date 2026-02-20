@@ -71,9 +71,16 @@
 <script setup lang="ts">
 import type { Category } from '~/types'
 
+const { getList } = useDatabaseRest()
+const { data: initialCategories } = await useAsyncData<Category[]>(
+  'categories',
+  () => getList<Category>('categories'),
+  { default: () => [] }
+)
+
 const { subscribeList, pushData, setData, removeData } = useDatabase()
 
-const categories = ref<Category[]>([])
+const categories = ref<Category[]>(initialCategories.value ?? [])
 const showModal = ref(false)
 const editingId = ref<string | null>(null)
 

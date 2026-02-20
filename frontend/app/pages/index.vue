@@ -66,10 +66,25 @@
 </template>
 
 <script setup lang="ts">
+const { getList } = useDatabaseRest()
+
+const [
+  { data: initialProducts },
+  { data: initialCategories },
+  { data: initialTags }
+] = await Promise.all([
+  useAsyncData<any[]>('stats-products', () => getList('products'), { default: () => [] }),
+  useAsyncData<any[]>('stats-categories', () => getList('categories'), { default: () => [] }),
+  useAsyncData<any[]>('stats-tags', () => getList('tags'), { default: () => [] }),
+])
+
+const stats = ref({
+  products: initialProducts.value?.length ?? 0,
+  categories: initialCategories.value?.length ?? 0,
+  tags: initialTags.value?.length ?? 0
+})
+
 const { subscribeList } = useDatabase()
-
-const stats = ref({ products: 0, categories: 0, tags: 0 })
-
 onMounted(() => {
   subscribeList('products', (list: any[]) => { stats.value.products = list.length })
   subscribeList('categories', (list: any[]) => { stats.value.categories = list.length })
